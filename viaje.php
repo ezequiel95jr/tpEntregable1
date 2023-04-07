@@ -9,7 +9,7 @@ Class Viaje{
         $this->codViaje = $codigo;
         $this->destino = $dest;
         $this->cantMax = $cant;
-        $this->pasajeros = [];
+        $this->pasajeros = $pasajeros ;
     }
 
     public function getCodViaje(){
@@ -34,22 +34,25 @@ Class Viaje{
         $this->cantMax=$cm;
     }
     public function setPasajeros($p){
-        $this->pasajeros=$p;
+        $this->pasajeros = $p;
     }
     public function __toString(){
         return "Codigo del vieje: ".$this->getCodViaje().", Destino: ".$this->getDestino().", Cantidad maxima: ".$this->getcantMax().$this->showPasajeros1()."\n";
     }
     public function showPasajeros1(){
-        for($i=0;$i<count($this->getPasajeros());$i++){
+        $ArrayPasajeros = $this->getPasajeros();
+        for($i=0;$i<count($ArrayPasajeros);$i++){
             echo "Pasajero n°".($i+1)."\n";
-            echo "Nombre: ".$this->getPasajeros()[$i]["Nombre"]."\n";
-            echo "Apellido: ".$this->getPasajeros()[$i]["Apellido"]."\n";
-            echo "DNI: ".$this->getPasajeros()[$i]["DNI"]."\n";
+            echo "Nombre: ".$ArrayPasajeros[$i]["Nombre"]."\n";
+            echo "Apellido: ".$ArrayPasajeros[$i]["Apellido"]."\n";
+            echo "DNI: ".$ArrayPasajeros[$i]["DNI"]."\n";
             echo "-------------------------------------\n";
-        }}
+            $this->setPasajeros($ArrayPasajeros);    
+        }
+    }
 
     public function modificator($dato, $clave){
-
+        // modifica los datos del viaje
         switch($clave){
             case 1: //clave = codigo
                 $this->setCodigo($dato);
@@ -79,5 +82,35 @@ Class Viaje{
     public function muestraDatos($i){
         return $this->getPasajeros()[$i]["Nombre"]." ".$this->getPasajeros()[$i]["Apellido"].", DNI: ".$this->getPasajeros()[$i]["DNI"]."\n";
     }
+    
+    public function cargaDatosViaje($pCodigo,$pDestino,$pCantMax){
+        //carga los datos del viaje
+        $this-> setCodigo($pCodigo);
+        $this-> setDestino($pDestino);
+        $this-> setCantMax($pCantMax);
+    }
+    public function cargarPasajero($pNombre, $pApellido, $pDNI,$pIndice){
+        $user = $this->getPasajeros();
+        $user[$pIndice] = ["Nombre" => $pNombre, "Apellido"=> $pApellido, "DNI"=> $pDNI];
+        $this->setPasajeros($user);
+    }
+    public function modificaPasajero($dato, $indice, $id){
+        $user = $this->getPasajeros();
+        switch($id){
+            case 1: 
+                //el dato es el nombre
+                $user[$indice] = ["Nombre"=> $dato,"Apellido"=> $user[$indice]["Apellido"],"DNI"=>$user[$indice]["DNI"]];
+                $this->setPasajeros($user);
+            break;
+            case 2: // apellido
+                $user[$indice] = ["Nombre"=> $user[$indice]["Nombre"],"Apellido"=> $dato,"DNI"=>$user[$indice]["DNI"]];
+                $this->setPasajeros($user);
+            break;
+            case 3: //DNI
+                $user[$indice] = ["Nombre"=> $user[$indice]["Nombre"],"Apellido"=> $user[$indice]["Apellido"],"DNI"=>$dato];
+                $this->setPasajeros($user);
+            break;
+        }
 
+    }
 }

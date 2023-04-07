@@ -1,30 +1,25 @@
 <?php
 include 'viaje.php';
-$usuarios = [];
-$viaje = new Viaje("0","default","0",$usuarios);
+$viaje = new Viaje("0","default","0",[]);
 /////////// MENU //////////////
-echo "Cargar informacion del viaje: \n";
+echo "* Cargar informacion del viaje * \n";
             echo "Ingrese el codigo del viaje: ";
             $codigoDelVieje = trim(fgets(STDIN));
-            $viaje->setCodigo($codigoDelVieje);
-            // dato: destino, id = 1;
-            $idDestino = 1;
-            validacionLetras($idDestino);
+            echo "Ingrese el destino: ";
+            $destino = validacionLetras();                         //modificado
             $opcionValida = false;
             do{     ///// validacion de numero //////
                 echo "Ingrese la cantidad máxima de pasajeros: ";
                 $cantMax = trim(fgets(STDIN));
                 if(is_numeric($cantMax) == true){
                     $opcionValida = true;
-                    $viaje->setCantMax($cantMax);
                 }
                 else{
                     echo "el carácter ingresado es invalido. \n";
                 }
-
             }
             while($opcionValida == false);
-
+            $viaje->cargaDatosViaje($codigoDelVieje,$destino,$cantMax);
             echo "\n";
             //cargaDatos($codigoDelVieje,$destino,$cantMax);
 
@@ -45,34 +40,22 @@ do{
         case 1: //////////// CARGAR UN NUEVO PASAJERO /////////////
             $dniRepetido = true;  
             if($cantPasajeros<$cantMax){   //hay espacio
-                    echo "INGRESE LA INFORMACION DEL PASAJERO \n";
-                    // nombre, id del validador de datos = 2.
-                    $idNombre = 2;
-                    validacionLetras($idNombre);
+                    echo "INGRESE LA INFORMACION DEL PASAJERO \n";                                                  //modificado
                     echo "Nombre: ";
-                    $name = trim(fgets(STDIN));
-                    echo "Apellido: ";
-                    $lastName = trim(fgets(STDIN));
-                do{
+                    $name = validacionLetras(); 
+                    echo "Apellido: ";                                              
+                    $lastName = validacionLetras(); 
                     echo "DNI: ";
-                    $dni = trim(fgets(STDIN));
+                    $dni = validaNumero();
                     // verificación de DNI repetido:
                     if($viaje->buscandoPasajero($dni) != -1){    //es decir, el DNI ingresado fue encontrado en otro pasajero.
                         echo " *** ADVERTENCIA ***\n";
                         echo "El DNI ingresado le pertenece a ".$viaje->muestraDatos($viaje->buscandoPasajero($dni))."\n";
-
-                    }
-                    elseif(is_numeric($dni) != true){
-                        echo "no está ingresando numeros, vuelva a intentarlo \n";
-
-                    }
-                    else{                               //el DNI ingresado no se repite.
-                    $usuarios[$cantPasajeros] = ["Nombre"=>$name,"Apellido"=>$lastName,"DNI"=>$dni];
+                }                               //el DNI ingresado no se repite.
+                    $viaje->cargarPasajero($name,$lastName,$dni,$cantPasajeros);
                     $cantPasajeros = $cantPasajeros+1;
-                    $viaje->setPasajeros($usuarios);
                     $dniRepetido = false;
                     echo "Pasajero guardado exitosamente.\n";
-            }}  while($dniRepetido == true);
                 }
             else{   //ya no hay espacio
                 echo "Lo sentimos, ya no hay mas espacio para el viaje. Capacida máxima: ".$cantMax."\n";
@@ -80,7 +63,7 @@ do{
             break;
         case 2: //////////// MODIFICAR LOS DATOS DE UN PASAJERO /////////////////
             if($cantPasajeros == 0){
-                echo "Lo sentimos, no hay pasajeros cargados.";
+                echo "Lo sentimos, no hay pasajeros cargados.\n";
             }
             else{
                 echo "ingrese el dni del pasajero al que quiere modificar: ";
@@ -89,7 +72,7 @@ do{
                 //devuelve -1 si no lo encuenta, devuelve la posicion si el pasajero existe
                 if($posicion == -1){   //// busca el dni dentro del array pasajeros
                     //no encontró al pasajero
-                    echo "Lo sentimos, el pasajero que busca no existe.";
+                    echo "Lo sentimos, el pasajero que busca no existe.\n";
             }
                 else{
                     // pasajero encontrado
@@ -97,45 +80,48 @@ do{
                     // condicion que verifique si la cant de pasajeros es 0 y mensaje que advierta 
                     echo "Pasajero encontrado: ".$viaje->muestraDatos($posicion)."\n";
                     echo "Qué dato desea modificar? \n";
-                    echo "a) Nombre \n";
-                    echo "b) Apellido \n";
-                    echo "c) DNI \n";
-                    $opcionModificar = trim(fgets(STDIN));
-                    switch($opcionModificar){
-                        case "a":    
-                            $id = 1;                    
-                            echo "Nuevo nombre: ";
-                            $name = trim(fgets(STDIN));
-                        break;
-                        case "b":
-                            $id = 2;
-                            echo "Nuevo apellido: ";
-                            $lastName = trim(fgets(STDIN));
-                        break;
-                        case "c":
-                            $id = 3;
-                            $dniValido = false;
-                            do{
-                                echo "DNI: ";
-                                $dni = trim(fgets(STDIN));
-                                if(is_numeric($dni) == true){
+                    $opValida = true;
+                    do{
+                        echo "a) Nombre \n";
+                        echo "b) Apellido \n";
+                        echo "c) DNI \n";
+                        $opcionModificar = trim(fgets(STDIN));
+                        if($opcionModificar == 'a'|| $opcionModificar == 'b'|| $opcionModificar == 'c'){
+                            switch($opcionModificar){
+                                case "a":    
+                                    $id = 1;                    
+                                    echo "Nuevo nombre: ";                                  
+                                    $name = validacionLetras(); 
+                                    $viaje->modificaPasajero($name,$posicion,$id);
+                                break;
+                                case "b":
+                                    $id = 2;
+                                    echo "Nuevo apellido: ";                                   
+                                    $lastName = validacionLetras();
+                                    $viaje->modificaPasajero($lastName,$posicion,$id);
+                                break;
+                                case "c":
+                                    $id = 3;
+                                    echo "Nuevo DNI: ";
+                                    $dni = validaNumero();
                                     if($viaje->buscandoPasajero($dni) != -1){    //es decir, el DNI ingresado fue encontrado en otro pasajero.
                                         echo " *** ADVERTENCIA ***\n";
-                                        echo "El DNI ingresado le pertenece a ".$viaje->muestraDatos($viaje->buscandoPasajero($dni))."\n";
+                                        echo "El DNI ingresado le pertenece a ".$viaje->muestraDatos($posicion)."\n";
                                         echo "vuelva a intentarlo \n";
-                                    }
-                                    else{
-                                        $dniValido = true;
-                                    }
-                                }
-                                else{
-                                    echo "el DNI ingresado no es valido. Vuelva a intentarlo \n";
-                                }
-                            }while($dniValido == false);
-                        break;         
+                            }       else{
+                                        $viaje->modificaPasajero($dni,$posicion,$id);
+                            }
+                                break;         
+                            }
+                            $opValida = false;
+                        }
+                        else{
+                            echo "Opcion invalida, try again. \n";
+                        }
                     }
-                    $usuarios[$posicion] = ["Nombre"=>$name,"Apellido"=>$lastName,"DNI"=>$dni];
-                    $viaje->setPasajeros($usuarios);
+                    while($opValida);
+                    
+
                 }
             }
         break;
@@ -154,26 +140,22 @@ do{
                         case "a":
                             $idModificator = 1;
                             echo "nuevo codigo: ";
-                            $codigoDelVieje = trim(fgets(STDIN));
-                            $viaje->modificator($codigoDelVieje,$idModificator);
+                            $modificacion = trim(fgets(STDIN));
                         break;
                         case "b":
                             $idModificator = 2;
                             echo "nuevo destino: ";
-                            $destino = trim(fgets(STDIN));
-                            $viaje->modificator($destino,$idModificator);
+                            $modificacion = validacionLetras();
+                            $viaje->modificator($modificacion,$idModificator);
                         break;
                         case "c": 
                             $idModificator = 3;
-                            echo "nueva cantidad de pasajeros: ";
-                            $cantMax = trim(fgets(STDIN));
-                            $opcionValida = false;
                         do{     ///// validacion de numero //////
-                            echo "Ingrese la cantidad máxima de pasajeros: ";
-                            $cantMax = trim(fgets(STDIN));
-                            if(is_numeric($cantMax) == true){
+                            echo "nueva cantidad de pasajeros: ";
+                            $modificacion = trim(fgets(STDIN));
+                            $opcionValida = false;
+                            if(is_numeric($modificacion) == true){
                                 $opcionValida = true;
-                                $viaje->setCantMax($cantMax);
                             }
                             else{
                                 echo "el carácter ingresado es invalido. \n";
@@ -181,11 +163,13 @@ do{
     }
             while($opcionValida == false);
         break;     
-    }}
+    }
+                $viaje->modificator($modificacion,$idModificator);
+}
                 else{
                         echo "Opcion invalida.\n";
     }}
-            while($opcionCorrecta == true);  
+        while($opcionCorrecta == true);  
         break;
         case 4: //////////// SHOW DATOS ////////////////////
             if($cantPasajeros == 0){
@@ -200,22 +184,35 @@ do{
             $stopMenu = false;
     }
 }
-else{
-    echo "** opcion inválida ** \n";
-}
-}while($stopMenu == true);
-function validacionLetras($idDato){
-    $valor = true;
-    do{
-                echo "Ingrese el destino: ";
-                $dato = trim(fgets(STDIN));
-                if(!is_numeric($dato)){
-                    $viaje->setDestino($destino);
-                }
-                else{
-                    echo "el dato ingresado no es valido.";
-            
+        else{
+            echo "** opcion inválida ** \n";
+        }
+        }while($stopMenu == true);
 
-                 } 
-}while($valor == true);
+        function validacionLetras(){
+            $valor = true;
+            do{               
+                        $dato = trim(fgets(STDIN));
+                        if(is_numeric($dato)){
+                            echo "Ingrese el dato correctamente: (sin numeros): ";    
+                        }
+                        else{
+                            $valor = false;
+                        } 
+        }while($valor == true);
+        return $dato;
+}
+    function validaNumero(){
+
+        $nroValido = false;
+        do{
+            $num = trim(fgets(STDIN));
+            if(is_numeric($num) == true){
+                $nroValido = true;    
+    }
+        else{
+                echo "el dato ingresado no es valido. Vuelva a intentarlo: ";
+    }        
+        }while($nroValido == false); 
+    return $num;               
 }
