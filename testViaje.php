@@ -1,31 +1,35 @@
 <?php
-include 'viaje.php';
-$viaje = new Viaje("0","default","0",[]);
+include_once 'viaje.php';
+include_once 'Persona.php';
+include_once 'Responsable.php';
+$arregloDePersonas[0] = new Persona("Ramon","Gonzales","34999999","2995000001");
+$arregloDePersonas[1] = new Persona("Julio","Leiva","35999999","2995000002");
+$arregloDePersonas[2] = new Persona("Amalia","Flores","39000001","2995000003");
 /////////// MENU //////////////
 echo "* Cargar informacion del viaje * \n";
-            echo "Ingrese el codigo del viaje: ";
-            $codigoDelVieje = trim(fgets(STDIN));
-            echo "Ingrese el destino: ";
-            $destino = validacionLetras();                         //modificado
-            $opcionValida = false;
-            do{     ///// validacion de numero //////
-                echo "Ingrese la cantidad máxima de pasajeros: ";
-                $cantMax = trim(fgets(STDIN));
-                if(is_numeric($cantMax) == true){
-                    $opcionValida = true;
-                }
-                else{
-                    echo "el carácter ingresado es invalido. \n";
-                }
-            }
-            while($opcionValida == false);
-            $viaje->cargaDatosViaje($codigoDelVieje,$destino,$cantMax);
-            echo "\n";
-            //cargaDatos($codigoDelVieje,$destino,$cantMax);
+    echo "Ingrese el codigo del viaje: ";
+    $codigoDelVieje = trim(fgets(STDIN));
+    echo "Ingrese el destino: ";
+    $destino = validacionLetras();                         //modificado
+    echo "Ingrese la cantidad máxima de pasajeros: ";
+    $cantMax = validaNumero();
+    echo "\n";
+    echo "Cargue los datos del responsable del viaje: \n";
+    /* el número de empleado, número de licencia, nombre y apellido */
+    echo "Número de empleado: ";
+    $nroEmpleado = validaNumero();
+    echo "Nombre: ";
+    $nombreResposable = validacionLetras();
+    echo "Apellido: ";
+    $apellidoResponsable = validacionLetras();
+    echo "Numero de licencia: ";
+    $nroLicencia = validaNumero();
+    $responsable1 = new Responsable($nroEmpleado,$nroLicencia,$nombreResposable,$apellidoResponsable);
+    $viaje = new Viaje($codigoDelVieje,$destino,$cantMax,$arregloDePersonas,$responsable1);
 
 //un while que controle no pasarse de la cantMax de pasajeros y que cargue uno tras otro de forma ordenada
 $stopMenu = true;
-$cantPasajeros = 0;
+$cantPasajeros = count($arregloDePersonas);
 do{
     echo "          MENÚ \n";            
     echo "1) Ingresar un nuevo pasajero: \n";
@@ -47,15 +51,18 @@ do{
                     $lastName = validacionLetras(); 
                     echo "DNI: ";
                     $dni = validaNumero();
+                    echo "Nro de telefono: ";
+                    $telefono = validaNumero();
                     // verificación de DNI repetido:
                     if($viaje->buscandoPasajero($dni) != -1){    //es decir, el DNI ingresado fue encontrado en otro pasajero.
                         echo " *** ADVERTENCIA ***\n";
                         echo "El DNI ingresado le pertenece a ".$viaje->muestraDatos($viaje->buscandoPasajero($dni))."\n";
                 }                               //el DNI ingresado no se repite.
-                    $viaje->cargarPasajero($name,$lastName,$dni,$cantPasajeros);
+                    $viaje->cargarPasajero($name,$lastName,$dni,$telefono,($cantPasajeros+1));
                     $cantPasajeros = $cantPasajeros+1;
                     $dniRepetido = false;
                     echo "Pasajero guardado exitosamente.\n";
+                    echo "Disponibilidad actual: ".($cantMax - $cantPasajeros)."\n";
                 }
             else{   //ya no hay espacio
                 echo "Lo sentimos, ya no hay mas espacio para el viaje. Capacida máxima: ".$cantMax."\n";

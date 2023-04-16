@@ -3,15 +3,16 @@ Class Viaje{
     private $codViaje;
     private $destino;
     private $cantMax;
-    private $pasajeros;
+    private $pasajeros;                 // coleccion de obj persona
+    private $responsable;               // obj responsable
     //////////// METODOS DE ACCESO ////////////////
-    public function __construct($codigo,$dest,$cant,$pasajeros){
+    public function __construct($codigo,$dest,$cant,$pasajeros,$pResponsable){
         $this->codViaje = $codigo;
         $this->destino = $dest;
         $this->cantMax = $cant;
-        $this->pasajeros = $pasajeros ;
+        $this->pasajeros = $pasajeros ;     // coleccion de obj pasajeros
+        $this->responsable = $pResponsable;  // obj responsable
     }
-
     public function getCodViaje(){
         return $this->codViaje;
     }
@@ -23,6 +24,9 @@ Class Viaje{
     }
     public function getPasajeros(){
         return $this->pasajeros;
+    }
+    public function getResponsable(){
+        return $this->responsable;
     }
     public function setCodigo($c){
         $this->codViaje = $c;
@@ -36,18 +40,17 @@ Class Viaje{
     public function setPasajeros($p){
         $this->pasajeros = $p;
     }
+    public function setResponsable($pResponsable){
+        $this->responsable = $pResponsable;
+    }
     public function __toString(){
-        return "Codigo del vieje: ".$this->getCodViaje().", Destino: ".$this->getDestino().", Cantidad maxima: ".$this->getcantMax().$this->showPasajeros1()."\n";
+        return "Codigo del vieje: ".$this->getCodViaje().", Destino: ".$this->getDestino().", Cantidad maxima: ".$this->getcantMax()."\n". $this->showPasajeros1()."Responsable: ".$this->getResponsable()->__toString();
     }
     public function showPasajeros1(){
-        $ArrayPasajeros = $this->getPasajeros();
+        $ArrayPasajeros = $this->getPasajeros();    //array de obj pasajeros
         for($i=0;$i<count($ArrayPasajeros);$i++){
-            echo "Pasajero n°".($i+1)."\n";
-            echo "Nombre: ".$ArrayPasajeros[$i]["Nombre"]."\n";
-            echo "Apellido: ".$ArrayPasajeros[$i]["Apellido"]."\n";
-            echo "DNI: ".$ArrayPasajeros[$i]["DNI"]."\n";
-            echo "-------------------------------------\n";
-            $this->setPasajeros($ArrayPasajeros);    
+            echo "Pasajero nro ".($i+1)."\n";
+            echo $ArrayPasajeros[$i]->__toString()."\n";
         }
     }
 
@@ -70,7 +73,7 @@ Class Viaje{
         $found = false;
         $posicionPasajero = -1;
         while($i<count($this->getPasajeros()) && $found == false){
-            if( $doc == $this->getPasajeros()[$i]["DNI"] ){
+            if( $doc == $this->getPasajeros()[$i]->getDNI() ){
                 // encontró al pasajero buscado
                 $posicionPasajero = $i;
                 $found = true;
@@ -80,7 +83,8 @@ Class Viaje{
         return $posicionPasajero;
     }
     public function muestraDatos($i){
-        return $this->getPasajeros()[$i]["Nombre"]." ".$this->getPasajeros()[$i]["Apellido"].", DNI: ".$this->getPasajeros()[$i]["DNI"]."\n";
+        //$i es la posicion en el array que deseo mostrar
+        return $this->getPasajeros()[$i]->getName()." ".$this->getPasajeros()[$i]->getApellido().", DNI: ".$this->getPasajeros()[$i]->getDNI()."\n";
     }
     
     public function cargaDatosViaje($pCodigo,$pDestino,$pCantMax){
@@ -89,28 +93,26 @@ Class Viaje{
         $this-> setDestino($pDestino);
         $this-> setCantMax($pCantMax);
     }
-    public function cargarPasajero($pNombre, $pApellido, $pDNI,$pIndice){
-        $user = $this->getPasajeros();
-        $user[$pIndice] = ["Nombre" => $pNombre, "Apellido"=> $pApellido, "DNI"=> $pDNI];
-        $this->setPasajeros($user);
+    public function cargarPasajero($pNombre, $pApellido, $pDNI,$tel){
+        $colPasajeros = [];
+        $colPasajeros = new Persona ($pNombre,$pApellido,$pDNI,$tel);
+        $arrayPa = $this->getPasajeros();
+        array_push($arrayPa,$colPasajeros);
+        $this->setPasajeros($arrayPa);
     }
     public function modificaPasajero($dato, $indice, $id){
-        $user = $this->getPasajeros();
+        $arrayPasajeros = $this->getPasajeros();
         switch($id){
             case 1: 
-                //el dato es el nombre
-                $user[$indice] = ["Nombre"=> $dato,"Apellido"=> $user[$indice]["Apellido"],"DNI"=>$user[$indice]["DNI"]];
-                $this->setPasajeros($user);
+                $arrayPasajeros[$indice]->setNombre($dato);
             break;
-            case 2: // apellido
-                $user[$indice] = ["Nombre"=> $user[$indice]["Nombre"],"Apellido"=> $dato,"DNI"=>$user[$indice]["DNI"]];
-                $this->setPasajeros($user);
+            case 2: // apellido          
+                $arrayPasajeros[$indice]->setApellido($dato);
             break;
-            case 3: //DNI
-                $user[$indice] = ["Nombre"=> $user[$indice]["Nombre"],"Apellido"=> $user[$indice]["Apellido"],"DNI"=>$dato];
-                $this->setPasajeros($user);
+            case 3: //DNI       
+                $arrayPasajeros[$indice]->setDNI($dato);              
             break;
         }
-
+        $this->setPasajeros($arrayPasajeros);
     }
 }
