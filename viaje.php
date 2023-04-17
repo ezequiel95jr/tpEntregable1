@@ -44,14 +44,16 @@ Class Viaje{
         $this->responsable = $pResponsable;
     }
     public function __toString(){
-        return "Codigo del vieje: ".$this->getCodViaje().", Destino: ".$this->getDestino().", Cantidad maxima: ".$this->getcantMax()."\n". $this->showPasajeros1()."Responsable: ".$this->getResponsable()->__toString();
+        $cadenaPasajeros = $this->showPasajeros1();
+        return "Codigo del vieje: ".$this->getCodViaje().", Destino: ".$this->getDestino().", Cantidad maxima: ".$this->getcantMax()."\n". $cadenaPasajeros."Responsable: ".$this->getResponsable()->__toString();
     }
     public function showPasajeros1(){
+        $cadena = "";
         $ArrayPasajeros = $this->getPasajeros();    //array de obj pasajeros
         for($i=0;$i<count($ArrayPasajeros);$i++){
-            echo "Pasajero nro ".($i+1)."\n";
-            echo $ArrayPasajeros[$i]->__toString()."\n";
+            $cadena = $cadena. "\n Pasajero nro ".($i+1)."\n" . $ArrayPasajeros[$i]->__toString()."\n";
         }
+        return $cadena;
     }
 
     public function modificator($dato, $clave){
