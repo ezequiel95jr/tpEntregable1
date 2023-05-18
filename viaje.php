@@ -2,13 +2,17 @@
 Class Viaje{
     private $codViaje;
     private $destino;
+    private $precio;
+    private $sumaCostos;
     private $cantMax;
     private $pasajeros;                 // coleccion de obj persona
     private $responsable;               // obj responsable
     //////////// METODOS DE ACCESO ////////////////
-    public function __construct($codigo,$dest,$cant,$pasajeros,$pResponsable){
+    public function __construct($codigo,$dest,$precio1,$suma,$cant,$pasajeros,$pResponsable){
         $this->codViaje = $codigo;
         $this->destino = $dest;
+        $this->precio = $precio1;
+        $this->sumaCostos = $suma;
         $this->cantMax = $cant;
         $this->pasajeros = $pasajeros ;     // coleccion de obj pasajeros
         $this->responsable = $pResponsable;  // obj responsable
@@ -18,6 +22,12 @@ Class Viaje{
     }
     public function getDestino(){
         return $this->destino;
+    }
+    public function getPrecio(){
+        return $this->precio;
+    }
+    public function getSumaCostos(){
+        return $this->sumaCostos;
     }
     public function getCantMax(){
         return $this->cantMax;
@@ -34,6 +44,12 @@ Class Viaje{
     public function setDestino($d){
         $this->destino = $d;
     }
+    public function setPrecio($p){
+        $this->precio = $p;
+    }
+    public function setCostos($costo){
+        $this->sumaCostos = $costo;
+    }
     public function setCantMax($cm){
         $this->cantMax=$cm;
     }
@@ -45,13 +61,13 @@ Class Viaje{
     }
     public function __toString(){
         $cadenaPasajeros = $this->showPasajeros1();
-        return "Codigo del vieje: ".$this->getCodViaje().", Destino: ".$this->getDestino().", Cantidad maxima: ".$this->getcantMax()."\n". $cadenaPasajeros."Responsable: ".$this->getResponsable()->__toString();
+        return "Codigo del vieje: ".$this->getCodViaje().", Destino: ".$this->getDestino()." | Suma de costos: $".$this->getSumaCostos().", Cantidad maxima: ".$this->getcantMax()."\n". $cadenaPasajeros."Responsable: ".$this->getResponsable()->__toString();
     }
     public function showPasajeros1(){
         $cadena = "";
         $ArrayPasajeros = $this->getPasajeros();    //array de obj pasajeros
         for($i=0;$i<count($ArrayPasajeros);$i++){
-            $cadena = $cadena. "\n Pasajero nro ".($i+1)."\n" . $ArrayPasajeros[$i]->__toString()."\n";
+            $cadena = $cadena. "\n Pasajero nro ".($i+1)."\n" ." | Precio: $".$this->venderPasaje($ArrayPasajeros[$i])."  ". $ArrayPasajeros[$i]->__toString()."\n";
         }
         return $cadena;
     }
@@ -66,16 +82,17 @@ Class Viaje{
                 $this->setDestino($dato);
             break;
             case 3: //clave = cantidad maxima de pasajeros
-                $this->setCantMax($dato);        
+                $this->setCantMax($dato);  
+            break;          
         }
     } 
 
-    public function buscandoPasajero($doc){
+    public function buscandoPasajero($dni){
         $i=0;
         $found = false;
         $posicionPasajero = -1;
-        while($i<count($this->getPasajeros()) && $found == false){
-            if( $doc == $this->getPasajeros()[$i]->getDNI() ){
+        while($i<count($this->getPasajeros()) && !$found){
+            if( $dni == $this->getPasajeros()[$i]->getDNI() ){
                 // encontró al pasajero buscado
                 $posicionPasajero = $i;
                 $found = true;
@@ -86,7 +103,7 @@ Class Viaje{
     }
     public function muestraDatos($i){
         //$i es la posicion en el array que deseo mostrar
-        return $this->getPasajeros()[$i]->getName()." ".$this->getPasajeros()[$i]->getApellido().", DNI: ".$this->getPasajeros()[$i]->getDNI()."\n";
+        return $this->getPasajeros()[$i]->getName()." ".$this->getPasajeros()[$i]->getApellido()." | número de asiento: ".$this->getPasajeros()[$i]->getNroAsiento()."   | número de ticket: ".$this->getPasajeros()[$i]->getNroTicket()."\n";
     }
     
     public function cargaDatosViaje($pCodigo,$pDestino,$pCantMax){
@@ -95,17 +112,15 @@ Class Viaje{
         $this-> setDestino($pDestino);
         $this-> setCantMax($pCantMax);
     }
-    public function cargarPasajero($pNombre, $pApellido, $pDNI,$tel){
-        $colPasajeros = [];
-        $colPasajeros = new Persona ($pNombre,$pApellido,$pDNI,$tel);
+    public function cargarPasajero($objPasajeroNew){
         $arrayPa = $this->getPasajeros();
-        array_push($arrayPa,$colPasajeros);
+        array_push($arrayPa,$objPasajeroNew);
         $this->setPasajeros($arrayPa);
     }
     public function modificaPasajero($dato, $indice, $id){
         $arrayPasajeros = $this->getPasajeros();
         switch($id){
-            case 1: 
+            case 1: //nombre
                 $arrayPasajeros[$indice]->setNombre($dato);
             break;
             case 2: // apellido          
@@ -114,7 +129,44 @@ Class Viaje{
             case 3: //DNI       
                 $arrayPasajeros[$indice]->setDNI($dato);              
             break;
+            case 4: // pasajero vip: millas
+                $arrayPasajeros[$indice]->setMillas($dato);
+            break;
+            case 5: // pasajero vip: nro viajero frecuente
+                $arrayPasajeros[$indice]->setNroFrecuente($dato);   
+            break;
+            case 6: // pasajero NE: silla de rueda
+                $arrayPasajeros[$indice]->setSillaDeRueda($dato);
+            break;
+            case 7: // pasajero NE: comida especial
+                $arrayPasajeros[$indice]->setComidaEspecial($dato);
+                break;
+            case 8: // pasajero NE: asistencia
+                $arrayPasajeros[$indice]->setAsistencia($dato);
+                break;         
         }
         $this->setPasajeros($arrayPasajeros);
+    }
+
+    public function venderPasaje($objPasajero){
+
+        $this->cargarPasajero($objPasajero);
+        $porcentajeActual = $objPasajero->darPorcentajeIncremento();
+        $precioActual = $this->getPrecio();
+        $precioActual = $precioActual + (($precioActual * $porcentajeActual)/100);
+        $sumaC = $this->getSumaCostos();
+        $sumaC = $sumaC + $precioActual;
+        $this->setCostos($sumaC);
+        
+    }
+
+    public function  hayPasajesDisponible() {
+        //retorna verdadero si la cantidad de pasajeros del viaje es menor a la cantidad máxima de pasajeros y falso caso contrario
+        $p = $this->getPasajeros();
+        $espacio = false;
+        if( count($p) <= $this->getCantMax() ){
+            $espacio = true;
+        }
+        return $espacio;
     }
 }
